@@ -6,59 +6,16 @@ generator client {
 }
 
 datasource db {
-    provider = "mongodb"
+    provider = "sqlite"
     url      = env("DATABASE_URL")
 }
 
 model User {
-    id           String  @id @default(auto()) @map("_id") @db.ObjectId
+    id           String  @id @default(uuid())
     profileImage String?
     email        String  @unique
-    firstName    String?
-    lastName     String?
-    password     String
-    isVerified   Boolean @default(false)
-    role         Role    @default(USER)
 
-    Project Project[]
-}
+    password String
 
-model Project {
-    id          String  @id @default(auto()) @map("_id") @db.ObjectId
-    name        String
-    description String?
-    owner       User    @relation(fields: [ownerId], references: [id])
-    ownerId     String  @db.ObjectId
-
-    Column Column[]
-}
-
-model Column {
-    id   String @id @default(auto()) @map("_id") @db.ObjectId
-    name String
-
-    project   Project @relation(fields: [projectId], references: [id])
-    projectId String  @db.ObjectId
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    Task      Task[]
-}
-
-model Task {
-    id          String  @id @default(auto()) @map("_id") @db.ObjectId
-    name        String
-    description String?
-    order       Int     @default(0)
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    Column   Column? @relation(fields: [columnId], references: [id])
-    columnId String? @db.ObjectId
-}
-
-enum Role {
-    USER
-    ADMIN
+    role String @default("USER")
 }

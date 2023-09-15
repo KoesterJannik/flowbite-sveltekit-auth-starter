@@ -1,49 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { hashPassword, verifyUser } from '$lib/server/auth';
-import { building } from '$app/environment';
-
-import { prisma } from '$lib/server/db';
-
-async function setupAdminAccount() {
-	const adminUser = await prisma.user.findFirst({
-		where: {
-			role: 'ADMIN'
-		}
-	});
-	if (!adminUser) {
-		const email = 'koesterjannik1998@gmail.com';
-		const password = 'thisisshrek';
-		const hashedPassword = await hashPassword(password);
-		await prisma.user.create({
-			data: {
-				email: email,
-				password: hashedPassword,
-				firstName: 'Jannik',
-				lastName: 'Koester',
-				role: 'ADMIN',
-				isVerified: true
-			}
-		});
-	}
-}
-
-async function startup() {
-	// start all cron jobs
-	console.log('Setup models');
-
-	await setupAdminAccount();
-}
-
-// this check prevents starting worker during pre-renders in build time
-if (!building) {
-	startup()
-		.then(async () => {
-			console.log('👷 worker started');
-		})
-		.catch((err) => {
-			console.warn('❗worker failed to start: ', err);
-		});
-}
+import { verifyUser } from '$lib/server/auth';
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
@@ -60,7 +16,7 @@ export async function handle({ event, resolve }) {
 
 		if (!user) {
 			console.log('User not found');
-			throw redirect(300, '/');
+			throw redirect(300, '/login');
 		}
 
 		event.locals.user = user;
